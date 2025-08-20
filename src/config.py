@@ -2,37 +2,46 @@
 
 import os
 from typing import Dict, List
-from pydantic import BaseSettings
 
-class Settings(BaseSettings):
-    """Application settings."""
+class Config:
+    """Application configuration."""
     
     # OpenAI Configuration
-    openai_api_key: str = ""
-    openai_model: str = "gpt-4-vision-preview"
-    openai_text_model: str = "gpt-4-turbo-preview"
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4-vision-preview")
+    OPENAI_TEXT_MODEL: str = os.getenv("OPENAI_TEXT_MODEL", "gpt-4-turbo-preview")
     
     # Document Processing
-    max_file_size_mb: int = 10
-    supported_formats: List[str] = [".pdf", ".png", ".jpg", ".jpeg"]
+    MAX_FILE_SIZE_MB: int = int(os.getenv("MAX_FILE_SIZE_MB", "10"))
+    SUPPORTED_FORMATS: List[str] = [".pdf", ".png", ".jpg", ".jpeg"]
     
     # OCR Configuration
-    tesseract_config: str = "--oem 3 --psm 6"
+    TESSERACT_CONFIG: str = "--oem 3 --psm 6"
     
     # Confidence Thresholds
-    min_field_confidence: float = 0.5
-    min_overall_confidence: float = 0.7
+    MIN_FIELD_CONFIDENCE: float = float(os.getenv("MIN_FIELD_CONFIDENCE", "0.5"))
+    MIN_OVERALL_CONFIDENCE: float = float(os.getenv("MIN_OVERALL_CONFIDENCE", "0.7"))
     
     # Validation Rules
-    validation_rules: Dict[str, str] = {
+    VALIDATION_RULES: Dict[str, str] = {
         "email": r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-        "phone": r'^\+?[\d\s\-$$$$]{10,}$',
+        "phone": r'^\+?[\d\s\-()]{10,}$',
         "date": r'^\d{1,2}[/-]\d{1,2}[/-]\d{2,4}$',
         "amount": r'^\$?\d+\.?\d{0,2}$'
     }
-    
-    class Config:
-        env_file = ".env"
+
+# Create a settings instance for backward compatibility
+class Settings:
+    def __init__(self):
+        self.openai_api_key = Config.OPENAI_API_KEY
+        self.openai_model = Config.OPENAI_MODEL
+        self.openai_text_model = Config.OPENAI_TEXT_MODEL
+        self.max_file_size_mb = Config.MAX_FILE_SIZE_MB
+        self.supported_formats = Config.SUPPORTED_FORMATS
+        self.tesseract_config = Config.TESSERACT_CONFIG
+        self.min_field_confidence = Config.MIN_FIELD_CONFIDENCE
+        self.min_overall_confidence = Config.MIN_OVERALL_CONFIDENCE
+        self.validation_rules = Config.VALIDATION_RULES
 
 # Global settings instance
 settings = Settings()
